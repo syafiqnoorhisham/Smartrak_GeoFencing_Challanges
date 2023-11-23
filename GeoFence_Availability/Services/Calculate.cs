@@ -13,15 +13,6 @@ namespace GeoFence_Availability.Services
     public class Calculate
     {
         
-        public static Dictionary<int, List<Tuple<DateTime, DateTime>>> CalculateAvailability(List<GeoFencePeriod> geofencePeriods)
-        {
-            // Group periods by vehicle ID and then create a sorted list of intervals for each vehicle
-            var groupedPeriods = geofencePeriods.GroupBy(p => p.VehicleId)
-                .ToDictionary(g => g.Key, g => g.Select(p => Tuple.Create(p.EnterTime, p.ExitTime)).OrderBy(t => t.Item1).ToList());
-
-            return groupedPeriods;
-        }
-
         public static int CalculateUnavailableIntervals(List<GeoFencePeriod> geofencePeriods)
         {
             int unavailableIntervals = 0;
@@ -48,7 +39,7 @@ namespace GeoFence_Availability.Services
 
                 foreach (var availability in carAvailabilityList)
                 {
-                    if (availability.NumberOfCarsAvailable == 0)
+                    if (availability.Date.HasValue && availability.NumberOfCarsAvailable == 0)
                     {
                         unavailableIntervals++;
                     }

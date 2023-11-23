@@ -15,10 +15,15 @@ class Program
     private const int TotalVehicles = 12;
 
     public static void Main()
-    {
+    { 
         string csvFilePath = Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..\data\GeofencePeriods.csv");
 
         var geofencePeriods = ReadCsv.ReadCsvFile(csvFilePath);
+
+        var geofencePeriodsweeks = geofencePeriods
+               .OrderBy(p => p.EnterTime) // Sort by oldest date first
+               .GroupBy(p => CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(p.EnterTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday));
+
 
         Console.WriteLine("+-------------------------+---------------------------------------------------------------------------------------+");
         Console.WriteLine("| Number of vehicles sold | Number of hours per week during which no vehicles are available (inside the geofence) |");
@@ -28,7 +33,7 @@ class Program
         {
             int unavailableIntervals = Calculate.CalculateUnavailableIntervals(geofencePeriods);
             double unavailableHours = unavailableIntervals / 4;
-            double unavailableHoursbyweek = unavailableHours / 5;
+            double unavailableHoursbyweek = unavailableHours / geofencePeriodsweeks.Count();
             double individualunavailableIntervals = (TotalBusinessHoursPerWeek - unavailableHoursbyweek)/TotalVehicles;
             if (soldVehicles > 0)
             {
