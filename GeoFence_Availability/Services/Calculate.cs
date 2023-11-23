@@ -22,7 +22,7 @@ namespace GeoFence_Availability.Services
             return groupedPeriods;
         }
 
-        public static int CalculateUnavailableIntervals(List<GeoFencePeriod> geofencePeriods, int soldVehicles)
+        public static int CalculateUnavailableIntervals(List<GeoFencePeriod> geofencePeriods)
         {
             int unavailableIntervals = 0;
             var weekIntervals = PopulateWeekInterval.GenerateBusinessWeekIntervals();
