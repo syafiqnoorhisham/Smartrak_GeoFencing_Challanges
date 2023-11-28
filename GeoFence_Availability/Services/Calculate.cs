@@ -16,15 +16,16 @@ namespace GeoFence_Availability.Services
         public static int CalculateUnavailableIntervals(List<GeoFencePeriod> geofencePeriods)
         {
             int unavailableIntervals = 0;
-            var weekIntervals = PopulateWeekInterval.GenerateBusinessWeekIntervals();
+            var oldestDate = DateOnly.FromDateTime(geofencePeriods.Min(gp => gp.EnterTime));
             var groupedByWeek = geofencePeriods
                 .OrderBy(p => p.EnterTime) // Sort by oldest date first
                 .GroupBy(p => CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(p.EnterTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday));
 
 
-            // For each interval, check if there are enough vehicles available
+     
             foreach (var weekGroup in groupedByWeek)
             {
+                var weekIntervals = PopulateWeekInterval.GenerateBusinessWeekIntervals(weekGroup);
                 var carAvailabilityList = weekGroup
                     .SelectMany(gp => CalculateCarAvailability(weekGroup.ToList(), weekIntervals))
                     .GroupBy(ca => new { ca.Day, ca.Time })
@@ -39,7 +40,9 @@ namespace GeoFence_Availability.Services
 
                 foreach (var availability in carAvailabilityList)
                 {
-                    if (availability.Date.HasValue && availability.NumberOfCarsAvailable == 0)
+                    var availabilityDate = availability.Date.GetValueOrDefault();
+
+                    if (availabilityDate >= oldestDate && availability.NumberOfCarsAvailable > 0)
                     {
                         unavailableIntervals++;
                     }
@@ -64,7 +67,7 @@ namespace GeoFence_Availability.Services
 
                 var matchingPeriod = geofencePeriods.FirstOrDefault(gp =>
                    gp.EnterTime.DayOfWeek == day);
-                DateOnly? intervalDate = matchingPeriod != null ? DateOnly.FromDateTime(matchingPeriod.EnterTime) : (DateOnly?)null;
+                DateOnly? intervalDate = date;
 
                 var availableVehicleIds = availabilityTable
                     .Where(kv => kv.Value.Any(period =>

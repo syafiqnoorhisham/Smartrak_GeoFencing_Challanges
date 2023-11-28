@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GeoFence_Availability.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,12 +10,13 @@ namespace GeoFence_Availability.Helper
     public class PopulateWeekInterval
     {
         private const int IntervalLengthInMinutes = 15;
-        public static List<Tuple<DayOfWeek, TimeSpan, DateOnly>> GenerateBusinessWeekIntervals()
+        public static List<Tuple<DayOfWeek, TimeSpan, DateOnly>> GenerateBusinessWeekIntervals(IGrouping<int,GeoFencePeriod> weekgroup)
         {
             var weekIntervals = new List<Tuple<DayOfWeek, TimeSpan, DateOnly>>();
             TimeSpan businessDayStart = new TimeSpan(8, 30, 0); // Business hours start at 8:30
             TimeSpan businessDayEnd = new TimeSpan(17, 0, 0); // Business hours end at 17:00 (5:00 pm)
-            DateOnly current = DateOnly.FromDateTime(DateTime.Now);
+            var earliestEnterTime = weekgroup.Min(gp => gp.EnterTime);
+            DateOnly current = DateOnly.FromDateTime(earliestEnterTime);
 
             // Find the start of the week (Monday)
             int daysUntilMonday = DayOfWeek.Monday - current.DayOfWeek;
