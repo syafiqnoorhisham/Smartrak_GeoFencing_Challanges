@@ -21,8 +21,6 @@ namespace GeoFence_Availability.Services
                 .OrderBy(p => p.EnterTime) // Sort by oldest date first
                 .GroupBy(p => CultureInfo.InvariantCulture.Calendar.GetWeekOfYear(p.EnterTime, CalendarWeekRule.FirstDay, DayOfWeek.Monday));
 
-
-     
             foreach (var weekGroup in groupedByWeek)
             {
                 var weekIntervals = PopulateWeekInterval.GenerateBusinessWeekIntervals(weekGroup);
@@ -42,7 +40,7 @@ namespace GeoFence_Availability.Services
                 {
                     var availabilityDate = availability.Date.GetValueOrDefault();
 
-                    if (availabilityDate >= oldestDate && availability.NumberOfCarsAvailable > 0)
+                    if (availabilityDate >= oldestDate && availability.NumberOfCarsAvailable == 0)
                     {
                         unavailableIntervals++;
                     }
